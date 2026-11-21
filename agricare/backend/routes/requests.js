@@ -1,0 +1,7 @@
+import express from 'express'; import ServiceRequest from '../models/ServiceRequest.js'; import {auth,adminOnly} from '../middleware/auth.js';
+const router=express.Router();
+router.post('/',auth,async(req,res)=>{try{const {serviceType,crop,details}=req.body;if(!serviceType||!crop)return res.status(400).json({message:'Service and crop are required'});const item=await ServiceRequest.create({user:req.user.id,serviceType,crop,details});res.status(201).json({message:'Application submitted',request:item});}catch{res.status(500).json({message:'Could not submit application'});}});
+router.get('/mine',auth,async(req,res)=>{const items=await ServiceRequest.find({user:req.user.id}).sort({createdAt:-1});res.json({requests:items});});
+router.get('/',auth,adminOnly,async(req,res)=>{const items=await ServiceRequest.find().populate('user','name email phone district village crops landSize').sort({createdAt:-1});res.json({requests:items});});
+router.patch('/:id/status',auth,adminOnly,async(req,res)=>{try{const {status,adminNote}=req.body;if(!['Approved','Rejected','Pending'].includes(status))return res.status(400).json({message:'Invalid status'});const item=await ServiceRequest.findByIdAndUpdate(req.params.id,{status,adminNote},{new:true}).populate('user','name email phone');if(!item)return res.status(404).json({message:'Application not found'});res.json({message:'Application updated',request:item});}catch{res.status(500).json({message:'Update failed'});}});
+export default router;
