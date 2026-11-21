@@ -67,7 +67,9 @@ mongoose.connection.on('error', (err) => {
     }
 
     const port = process.env.PORT || 5000;
-
+    app.get('/', (req, res) => {
+  res.send('AgriCare Backend is running successfully!');
+});
     app.listen(port, () => {
       console.log('API running at http://localhost:${port}');
     });
