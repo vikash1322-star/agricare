@@ -63,7 +63,17 @@ mongoose.connection.on('error', (err) => {
         admin.role = 'admin';
         await admin.save();
         console.log('Existing account promoted to admin');
+      } else if (process.env.RESET_ADMIN_PASSWORD === 'true') {
+      const newPassword = process.env.ADMIN_PASSWORD;
+
+      if (!newPassword || newPassword.length < 12) {
+        throw new Error('Set ADMIN_PASSWORD to at least 12 characters before reset.');
       }
+
+      admin.password = await bcrypt.hash(newPassword, 10);
+      await admin.save();
+      console.log('Admin password reset successfully');
+    }
     }
 
     const port = process.env.PORT || 5000;
